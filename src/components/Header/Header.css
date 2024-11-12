@@ -1,0 +1,78 @@
+.header {
+	position: fixed;
+	width: 100%;
+	background-color: #1a1a1a; /* Тёмно-серый цвет */
+	left: 0;
+	top: 0;
+	z-index: 50;
+	height: 50px; /* Общая высота header */
+	display: flex;
+	align-items: center;
+}
+
+.header__container {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0 200px;
+}
+
+.header__branding {
+	display: flex;
+	align-items: center;
+}
+
+.header__logo img {
+	width: 30px; /* Размер логотипа */
+	margin-right: 8px;
+}
+
+.header__title {
+	font-size: 18px;
+	color: #ffffff; /* Белый цвет для текста "Логика" */
+	font-weight: 500;
+	margin: 0;
+}
+
+.header__menu {
+	font-size: 18px;
+	display: flex;
+	align-items: center;
+}
+
+.menu__list {
+	display: flex;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.menu__link {
+	color: #ffffff;
+	text-decoration: none;
+	padding: 5px 15px;
+	border-radius: 4px;
+	background-color: #333333; /* Кнопка на фоне серого */
+	transition: background-color 0.3s ease, color 0.3s ease;
+	font-weight: bold;
+}
+
+.menu__link:hover, .menu__link_active {
+	background-color: #555555; /* Светлее при наведении */
+	color: #ffffff;
+}
+
+@media (max-width: 992px) {
+	.header__container {
+		justify-content: space-between;
+		padding: 0 10px;
+	}
+	.menu__list {
+		flex-direction: column;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+	}
+}

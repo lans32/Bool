@@ -1,0 +1,27 @@
+.home {
+    display: flex; /* Используем flexbox */
+    flex-direction: column; /* Вертикальное расположение элементов */
+    align-items: center; /* Центрируем по горизонтали */
+    justify-content: center; /* Центрируем по вертикали */
+    height: calc(100vh - 104px); /* Высота экрана минус высота заголовка */
+    padding: 20px; /* Отступы вокруг текста */
+    text-align: center; /* Центрируем текст */
+    font-family: noto-serif; /* Устанавливаем шрифт */
+    color: #333; /* Цвет текста */
+    background-color: #e4e4e4; /* Цвет фона */
+    border-radius: 8px; /* Скругленные углы */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Легкая тень */
+    margin-top: 104px; /* Отступ сверху, чтобы избежать наложения на header */
+}
+
+.home h1 {
+    font-size: 2.5rem; /* Размер заголовка */
+    margin-bottom: 20px; /* Отступ снизу */
+    color: var(--main_color); /* Используем основной цвет */
+}
+
+.home p {
+    font-size: 1.2rem; /* Размер текста для параграфов */
+    line-height: 1.6; /* Междустрочный интервал */
+    margin: 10px 0; /* Отступы между параграфами */
+}

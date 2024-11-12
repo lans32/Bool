@@ -1,0 +1,81 @@
+.card {
+    background-color: #ffffff;
+    height: 373px;
+    width: 237px;
+    filter: drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.45));
+    border-radius: 8px;
+    padding: 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.head_card {
+    background-color: #31708f;
+    height: 93px;
+    width: 237px;
+    border-radius: 8px 8px 0px 0px;
+    padding: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.name_card {
+    color: #ffffff;
+    text-align: center;
+    font-size: 24px;
+    font-family: 'Source Sans Pro', sans-serif;
+    line-height: auto;
+    width: 221px;
+}
+
+.operation_discription {
+    background-color: #d9d9d9;
+    height: 32px;
+    width: 237px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 12px;
+}
+
+.description_text {
+    color: #31708f;
+    font-size: 16px;
+    font-family: 'Source Sans Pro', sans-serif;
+    text-align: center;
+}
+
+.card_content {
+    height: 247px;
+    width: 237px;
+    padding: 10px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: center;
+}
+
+.card_image {
+    height: 161px;
+    width: 221px;
+}
+
+.button {
+    background-color: #333333;
+    height: 26px;
+    width: 221px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+
+.button_text {
+    color: #ffffff;
+    font-size: 16px;
+    font-family: 'Source Sans Pro', sans-serif;
+    text-align: center;
+}
