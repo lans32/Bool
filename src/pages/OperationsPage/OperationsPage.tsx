@@ -3,6 +3,7 @@ import './OperationsPage.css';
 import { OperationsMocks } from '../../modules/mocks';
 import { T_Operation } from '../../modules/types';
 import OperationCard from '../../components/OperationCard/OperationCard';
+import TrafficLight from '../../components/TrafficLight/TrafficLight';
 
 const OperationsPage = () => {
     const [operations, setOperations] = useState<T_Operation[]>([]);
@@ -10,21 +11,24 @@ const OperationsPage = () => {
     const [name, setName] = useState('');
     const [quantity, setQuantity] = useState(0);
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch(`/api/operations/?name=${name.toLowerCase()}`, { signal: AbortSignal.timeout(1000) });
-            
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            const result = await response.json();
-            setOperations(result.operations);
-            setQuantity( result.quantity || 0 );
-            setIsMock(false);
-        } catch (error) {
-            createMocks();
-        }
+    const fetchData = () => {
+        fetch(`/api/operations/?name=${name.toLowerCase()}`)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then((result) => {
+                setOperations(result.operations);
+                setQuantity(result.quantity || 0);
+                setIsMock(false);
+            })
+            .catch(() => {
+                createMocks();
+            });
     };
+    
     
     
     const createMocks = () => {
@@ -44,16 +48,11 @@ const OperationsPage = () => {
     return (
         <div className="product-list-page">
             <div className="container">
-                {/* Верхний ряд для корзины и поиска */}
-                <div className="search-and-bucket">
-                    {/* Корзина слева */}
-                    <div className="bucket-icon">
-                        <a href={`/ask/1`}>
-                            <img src="calc_icon.svg" alt="Cart" className="bucket-image" />
-                        </a>
-                        <span className="bucket-count">
-                            {quantity > 0 ? quantity : 0}
-                        </span>
+                {/* Верхний ряд для светофора и поиска */}
+                <div className="search-and-traffic-light">
+                    {/* Светофор слева */}
+                    <div className="traffic-light-widget">
+                        <TrafficLight />
                     </div>
 
     

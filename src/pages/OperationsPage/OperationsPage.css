@@ -4,6 +4,20 @@ body {
   margin: 0;
 }
 
+
+.search-and-traffic-light {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  gap: 10px;
+}
+
+.traffic-light-widget {
+  display: flex;
+  align-items: center;
+}
+
 /* Центрирование контейнера поиска и корзины */
 .search-and-bucket {
   display: flex;

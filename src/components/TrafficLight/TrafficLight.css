@@ -1,0 +1,43 @@
+.traffic-light {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+  width: 40px; /* Ширина светофора */
+  height: 100px; /* Высота светофора */
+  background-color: #333; /* Тёмно-серый фон */
+  border-radius: 10px;
+  padding: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+  transition: background-color 0.3s;
+}
+
+.light {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: gray;
+  opacity: 0.4;
+  transition: opacity 0.3s, background-color 0.3s;
+}
+
+.light.active {
+  opacity: 1;
+}
+
+.light.red {
+  background-color: red;
+}
+
+.light.yellow {
+  background-color: yellow;
+}
+
+.light.green {
+  background-color: green;
+}
+
+.traffic-light:hover {
+  background-color: #444; /* Немного светлее при наведении */
+}
