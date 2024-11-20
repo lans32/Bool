@@ -6,7 +6,7 @@ import { Provider } from 'react-redux'; // Импортируем Provider
 import { store } from './store'; // Подключаем созданный store
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <BrowserRouter basename="/Bool">
+  <BrowserRouter> {/* basename="/Bool" */}
     <Provider store={store}> {/* Оборачиваем приложение в Provider */}
       <App />
     </Provider>

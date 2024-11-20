@@ -16,7 +16,7 @@ const Header = () => {
         {/* Логотип и название сайта в одном контейнере */}
         <div className="header__branding">
           <Link to="/" className="header__logo">
-            <img src="/Bool/logo.png" alt="Logo" />
+            <img src="/logo.png" alt="Logo" />
           </Link>
           <span className="header__title">Логика</span>
         </div>
