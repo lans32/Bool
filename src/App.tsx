@@ -9,11 +9,26 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import OperationsPage from './pages/OperationsPage/OperationsPage'
 import OperationPage from './pages/OperationPage/OperationPage'
 import Breadcrumbs from './components/Breadcrumbs/Breadcrumbs'
+import { useEffect } from 'react'
 
+function App() {
+  useEffect(() => {
+    if (window.TAURI) {
+      const { invoke } = window.TAURI.tauri;
 
+      invoke('tauri', { cmd: 'create' })
+        .then((response: any) => console.log(response))
+        .catch((error: any) => console.log(error));
 
-const App = () => {
-  const location = useLocation();
+      return () => {
+        invoke('tauri', { cmd: 'close' })
+          .then((response: any) => console.log(response))
+          .catch((error: any) => console.log(error));
+      };
+    }
+  }, []);
+
+  const location= useLocation();
 
   return (
     <>
