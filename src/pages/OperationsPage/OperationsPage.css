@@ -79,7 +79,7 @@
 
 @media (max-width: 780px) {
   .operation-card-container {
-    width: 100%; /* Чтобы контейнер занимал всю ширину экрана */
+    width: 100%;
     display: flex;
     justify-content: center;
   }
