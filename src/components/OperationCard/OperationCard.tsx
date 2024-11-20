@@ -23,7 +23,7 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation }) => {
             {/* Контент карточки с изображением */}
             <div className="card_content">
                 <img
-                    src={operation.photo || 'default.jpg'}
+                    src={operation.photo || '/Bool/default.jpg'}
                     alt={operation.name}
                     className="card_image"
                 />
