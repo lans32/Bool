@@ -1,94 +1,79 @@
-import { useEffect, FormEvent, useState } from 'react'; 
+// OperationsPage.tsx
+import { useEffect, FormEvent } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import './OperationsPage.css';
-import { OperationsMocks } from '../../modules/mocks';
 import { T_Operation } from '../../modules/types';
 import OperationCard from '../../components/OperationCard/OperationCard';
 import TrafficLight from '../../components/TrafficLight/TrafficLight';
+import {
+    setOperations,
+    setIsMock,
+    setName,
+    setQuantity,
+} from '../../slices/operationsSlice';
+import { RootState } from '../../store';
+import { OperationsMocks } from '../../modules/mocks';
 
 const OperationsPage = () => {
-    const [operations, setOperations] = useState<T_Operation[]>([]);
-    const [isMock, setIsMock] = useState(false);
-    const [name, setName] = useState('');
-    const [quantity, setQuantity] = useState(0);
+    const dispatch = useDispatch();
+    const { operations, name } = useSelector((state: RootState) => state.operations);
 
-    const fetchData = () => {
-        fetch(`/api/operations/?name=${name.toLowerCase()}`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then((result) => {
-                setOperations(result.operations);
-                setQuantity(result.quantity || 0);
-                setIsMock(false);
-            })
-            .catch(() => {
-                createMocks();
-            });
+    const fetchData = async () => {
+        try {
+            const response = await fetch(`/api/operations/?name=${name.toLowerCase()}`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            const result = await response.json();
+            dispatch(setOperations(result.operations));
+            dispatch(setQuantity(result.quantity || 0));
+            dispatch(setIsMock(false));
+        } catch {
+            dispatch(setIsMock(true));
+            const mockOperations = OperationsMocks.filter((operation) =>
+                operation.name.toLowerCase().includes(name.toLowerCase())
+            );
+            dispatch(setOperations(mockOperations));
+        }
     };
-    
-    
-    
-    const createMocks = () => {
-        setIsMock(true);
-        setOperations(OperationsMocks.filter(operation => operation.name.toLowerCase().includes(name.toLowerCase())));
-    }
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        await fetchData();
-    }
+        fetchData();
+    };
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [name]);
 
     return (
         <div className="product-list-page">
-            <div className="container">
-                {/* Верхний ряд для светофора и поиска */}
-                <div className="search-and-traffic-light">
-                    {/* Светофор слева */}
-                    <div className="traffic-light-widget">
-                        <TrafficLight />
-                    </div>
-
-    
-                    {/* Поиск справа */}
-                    <form onSubmit={handleSubmit} className="search-bar">
-                        <input
-                            type="text"
-                            name="search_product"
-                            className="search-bar"
-                            placeholder="Введите название"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                        />
-                        <button type="submit" className="search-button">
-                            <img src="search.svg" alt="Search" />
-                        </button>
-                    </form>
+            <div className="search-and-traffic-light">
+                <div className="traffic-light-widget">
+                    <TrafficLight />
                 </div>
-    
-                {/* Ряд для списка карточек, центрированного по странице */}
-                <div className="row justify-content-center">
-                    <div className="col-md-10">
-                        <div className="product-list">
-                            {operations.length ? (
-                                operations.map((operation) => (
-                                    <OperationCard key={operation.id} operation={operation} />
-                                ))
-                            ) : (
-                                <p>Операции не найдены.</p>
-                            )}
-                        </div>
-                    </div>
+                <form onSubmit={handleSubmit} className="search-input">
+                    <input
+                        type="text"
+                        name="search_product"
+                        className="search-input"
+                        placeholder="Введите название"
+                        value={name}
+                        onChange={(e) => dispatch(setName(e.target.value))}
+                    />
+                </form>
+            </div>
+            <div className="operation-card-container">
+                <div className="operation-card-grid">
+                    {operations.length ? (
+                        operations.map((operation: T_Operation) => (
+                            <OperationCard key={operation.id} operation={operation} />
+                        ))
+                    ) : (
+                        <p>Операции не найдены.</p>
+                    )}
                 </div>
             </div>
         </div>
-    );    
+    );
 };
 
 export default OperationsPage;

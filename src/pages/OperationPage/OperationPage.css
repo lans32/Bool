@@ -8,7 +8,7 @@
 
 .product-operations {
   display: flex;
-  align-items: center;
+  flex-direction: row;
   gap: 20px;
 }
 
@@ -541,4 +541,22 @@
   min-height: 100vh;
   background-color: #e4e4e4;
   padding-top: 20px;
+}
+
+@media (max-width: 780px) {
+  .product-operations {
+    flex-direction: column; /* Изменяем направление на колонку */
+    align-items: center; /* Центрируем содержимое */
+  }
+
+  .product-image {
+    width: 100%; /* Изображение растягивается на всю ширину */
+    max-width: 300px; /* Максимальная ширина для контроля */
+    height: auto; /* Сохраняем пропорции */
+  }
+
+  .info {
+    text-align: center; /* Центрируем текст */
+    width: 100%; /* Текст занимает всю ширину */
+  }
 }
