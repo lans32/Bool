@@ -1,0 +1,23 @@
+{
+    "name": "Bool",
+    "short_name": "Bool",
+    "start_url": "/Bool/",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#00001a",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/Bool/logo.png",
+            "type": "image/png",
+            "sizes": "96x96",
+            "purpose": "any"
+        },
+        {
+            "src": "/Bool/logo.png",
+            "type": "image/png",
+            "sizes": "96x96",
+            "purpose": "maskable"
+        }
+    ]
+}
