@@ -2,10 +2,10 @@
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Bool",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.bmstu.bool",
   "build": {
-    "frontendDist": "../build",
-    "devUrl": "http://192.168.13.145:5173",
+    "frontendDist": "../dist",
+    "devUrl": "http://192.168.31.50:5173",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
@@ -13,25 +13,23 @@
     "windows": [
       {
         "title": "Bool",
-        "width": 800,
-        "height": 600,
+        "width": 500,
+        "height": 700,
         "resizable": true,
         "fullscreen": false
       }
     ],
     "security": {
       "csp": null
+    },
+    "withGlobalTauri": true
+  },
+  "plugins": {
+    "http": {
+      "enabled": true
     }
   },
   "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
-    ]
+    "active": false
   }
 }

@@ -17,7 +17,7 @@ const OperationPage: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`/api/operations/${id}`, { signal: AbortSignal.timeout(1000) });
+      const response = await fetch(`http://192.168.31.50:8000/api/operations/${id}`, { signal: AbortSignal.timeout(1000) });
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setOperation(data);
@@ -26,6 +26,7 @@ const OperationPage: React.FC = () => {
       createMock();
     }
   };
+  
 
   const createMock = () => {
     setIsMock(true);
@@ -47,7 +48,7 @@ const OperationPage: React.FC = () => {
 
 
   if (!operation) {
-    return <div>Деталь не найдена</div>;
+    return <div>Операция не найдена</div>;
   }
 
   return (

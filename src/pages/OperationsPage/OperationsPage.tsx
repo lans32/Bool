@@ -1,39 +1,33 @@
 // OperationsPage.tsx
-import { useEffect, FormEvent } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import './OperationsPage.css';
 import { T_Operation } from '../../modules/types';
 import OperationCard from '../../components/OperationCard/OperationCard';
 import TrafficLight from '../../components/TrafficLight/TrafficLight';
-import {
-    setOperations,
-    setIsMock,
-    setName,
-    setQuantity,
-} from '../../slices/operationsSlice';
+import { setName } from '../../slices/operationsSlice';
 import { RootState } from '../../store';
 import { OperationsMocks } from '../../modules/mocks';
 
 const OperationsPage = () => {
     const dispatch = useDispatch();
-    const { operations, name } = useSelector((state: RootState) => state.operations);
+    const name = useSelector((state: RootState) => state.operations.name);
+
+    const [operations, setOperations] = useState<T_Operation[]>([]);
 
     const fetchData = async () => {
         try {
-            const response = await fetch(`/api/operations/?name=${name.toLowerCase()}`);
-            if (!response.ok) throw new Error('Network response was not ok');
-            const result = await response.json();
-            dispatch(setOperations(result.operations));
-            dispatch(setQuantity(result.quantity || 0));
-            dispatch(setIsMock(false));
+          const response = await fetch(`http://192.168.31.50:8000/api/operations/?name=${name.toLowerCase()}`);
+          if (!response.ok) throw new Error('Network response was not ok');
+          const result = await response.json();
+          setOperations(result.operations);
         } catch {
-            dispatch(setIsMock(true));
-            const mockOperations = OperationsMocks.filter((operation) =>
-                operation.name.toLowerCase().includes(name.toLowerCase())
-            );
-            dispatch(setOperations(mockOperations));
+          const mockOperations = OperationsMocks.filter((operation) =>
+            operation.name.toLowerCase().includes(name.toLowerCase())
+          );
+          setOperations(mockOperations);
         }
-    };
+      };      
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -77,3 +71,4 @@ const OperationsPage = () => {
 };
 
 export default OperationsPage;
+

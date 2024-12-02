@@ -10,25 +10,24 @@ import OperationsPage from './pages/OperationsPage/OperationsPage'
 import OperationPage from './pages/OperationPage/OperationPage'
 import Breadcrumbs from './components/Breadcrumbs/Breadcrumbs'
 import { useEffect } from 'react'
+import { invoke } from '@tauri-apps/api/core';
 
 function App() {
   useEffect(() => {
-    if (window.TAURI) {
-      const { invoke } = window.TAURI.tauri;
+    // Вызов команды Tauri при монтировании компонента
+    invoke('create')
+      .then((response: any) => console.log('Create command response:', response))
+      .catch((error: any) => console.error('Error invoking create command:', error));
 
-      invoke('tauri', { cmd: 'create' })
-        .then((response: any) => console.log(response))
-        .catch((error: any) => console.log(error));
-
-      return () => {
-        invoke('tauri', { cmd: 'close' })
-          .then((response: any) => console.log(response))
-          .catch((error: any) => console.log(error));
-      };
-    }
+    // Возвращаем функцию очистки
+    return () => {
+      invoke('close')
+        .then((response: any) => console.log('Close command response:', response))
+        .catch((error: any) => console.error('Error invoking close command:', error));
+    };
   }, []);
 
-  const location= useLocation();
+  const location = useLocation();
 
   return (
     <>
@@ -46,6 +45,6 @@ function App() {
       </main>
     </>
   );
-};
+}
 
-export default App
+export default App;

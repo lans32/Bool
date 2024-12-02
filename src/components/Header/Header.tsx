@@ -1,8 +1,7 @@
-import { useLocation, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Header.css';
 
 const Header = () => {
-  const location = useLocation(); // Получаем текущий путь
 
   return (
     <header className="header">

@@ -20,7 +20,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    "noUncheckedSideEffectImports": true
+    "noUncheckedSideEffectImports": true,
+
+    /* Add Tauri types */
+    "types": ["@tauri-apps/api"]
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "node_modules/@tauri-apps/api"
+  ]
 }
