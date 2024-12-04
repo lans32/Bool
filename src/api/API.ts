@@ -1,143 +1,155 @@
-//API.ts
 "use strict";
-import { OperationsMocks } from "../modules/mocks";
 
-import Ajax from "./Ajax.ts";
-//import { getCookie } from "./Utils";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { getCookie } from "./Utils";
 
 interface LoginParams {
     email: string;
     password: string;
 }
 
-const API = {
-    BASE_URL: `http://localhost:5173/api`,
+interface APIResponse<T = any> {
+    json: () => Promise<T>;
+    ok: boolean;
+    status: number;
+    statusText: string;
+}
 
-    async getCsrfToken() {
+class API {
+    private static instance: AxiosInstance;
+
+    private static getInstance(): AxiosInstance {
+        if (!this.instance) {
+            this.instance = axios.create({
+                baseURL: "http://localhost:5173/api/",
+                withCredentials: true,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            this.instance.interceptors.request.use(
+                (config) => {
+                    if (["post", "put", "delete"].includes(config.method || "")) {
+                        const csrfToken = getCookie("csrftoken");
+                        if (!csrfToken) {
+                            throw new Error("CSRF token is missing");
+                        }
+                        config.headers["X-CSRFToken"] = csrfToken;
+                    }
+                    return config;
+                },
+                (error) => Promise.reject(error)
+            );
+
+            this.instance.interceptors.response.use(
+                (response) => response,
+                (error) => {
+                    console.error("[API Error]:", error.response?.data || error.message);
+                    return Promise.reject(error);
+                }
+            );
+        }
+        return this.instance;
+    }
+
+    private static handleResponse<T>(response: AxiosResponse<T>): APIResponse<T> {
+        return {
+            json: async () => response.data,
+            ok: response.status >= 200 && response.status < 300,
+            status: response.status,
+            statusText: response.statusText,
+        };
+    }
+
+    private static async safeRequest<T>(promise: Promise<AxiosResponse<T>>): Promise<APIResponse<T>> {
         try {
-            const url = this.BASE_URL + '/csrf/';
-            const response = await Ajax.get(url);
-            const data = await response.json()
-            return data.csrfToken
+            const response = await promise;
+            return this.handleResponse(response);
+        } catch (error: any) {
+            if (error.response) {
+                return this.handleResponse(error.response);
+            }
+            throw error; // Network or unexpected error
+        }
+    }
+
+    static async getCsrfToken(): Promise<string | null> {
+        try {
+            const response = await this.getInstance().get("csrf/");
+            return response.data.csrfToken;
         } catch (error) {
-            console.error('Failed to fetch CSRF token:', error);
+            console.error("Failed to fetch CSRF token:", error);
             return null;
         }
-    },
+    }
 
-    async getSession() {
-        const url = this.BASE_URL + '/users/check/'
-        return Ajax.get(url)
-    },
+    static async getSession() {
+        return this.safeRequest(this.getInstance().get("users/check/"));
+    }
 
-    async getOperations(){
-        const url = this.BASE_URL + "/operations/";
-        try {
-            const data = await Ajax.get(url);
-            return data;
-        } catch (error) {
-            console.error("Ошибка при загрузке данных с бэкенда:", error);
-            return OperationsMocks;
-        }
-        //return Ajax.get(url);
-    },
+    static async getOperations(postfix?: string) {
+        const url = postfix ? `operations/${postfix}` : "operations/";
+        return this.safeRequest(this.getInstance().get(url));
+    }
 
-    async getOperationDetails(operationId: number) {
-        const url = this.BASE_URL + `/operations/${operationId}/`;
-        try {
-            const data = await Ajax.get(url);
-            return data;
-        } catch (error) {
-            console.error("Ошибка при загрузке данных об операции:", error);
-            const mockOperation = OperationsMocks.find((s) => s.id === operationId);
-            if (mockOperation) {
-                return mockOperation;
-            } else {
-                throw new Error("Операция не найден в мок-данных");
-            }
-        }
-    },
+    static async getOperationDetails(id: string) {
+        return this.safeRequest(this.getInstance().get(`operations/${id}/`));
+    }
 
-    async login({email, password}:LoginParams) {
-        const url = this.BASE_URL + '/login/'
-        const body = {
-            email: email,
-            password: password
-        }
-        return Ajax.post({url, body})
-    },
+    static async login({ email, password }: LoginParams) {
+        return this.safeRequest(this.getInstance().post("login/", { email, password }));
+    }
 
-    async auth({email, password}:LoginParams) {
-        const url = this.BASE_URL + '/users/auth/'
-        const body = {
-            email: email,
-            password: password
-        }
-        return Ajax.post({url, body})
-    },
-    
-    async logout() {
-        const url = this.BASE_URL + '/logout/';
-        const body = {};
-        return Ajax.post({url, body})
-    },
+    static async logout() {
+        return this.safeRequest(this.getInstance().post("logout/", {}));
+    }
 
-    async updateProfile(email?: string, password?: string) {
-        const url = this.BASE_URL + '/users/profile/';
-        const body: any = {};
+    static async auth({ email, password }: LoginParams) {
+        return this.safeRequest(this.getInstance().post("users/auth/", { email, password }));
+    }
+
+    static async getAsks(filters?: { date_from?: string; date_to?: string; status?: string }) {
+        const query = new URLSearchParams(filters).toString();
+        return this.safeRequest(this.getInstance().get(`asks/?${query}`));
+    }
+
+    static async getAskById(id: number) {
+        return this.safeRequest(this.getInstance().get(`asks/${id}/`));
+    }
+
+    static async addOperationToDraft(id: number) {
+        return this.safeRequest(this.getInstance().post(`operations/${id}/draft/`, {}));
+    }
+
+    static async changeOperationFields(operationId: number, askId: number, secondOperand?: boolean) {
+        return this.safeRequest(this.getInstance().put(`asks/${askId}/operations/${operationId}/`, { second_operand: secondOperand }));
+    }
+
+    static async changeAddFields(id: number, firstOperand?: boolean) {
+        const body: Record<string, any> = {};
+        body.first_operand = firstOperand;
+        return this.safeRequest(this.getInstance().put(`asks/${id}/edit/`, body));
+    }
+
+    static async deleteOperationFromDraft(askId: number, operationId: number) {
+        return this.safeRequest(this.getInstance().delete(`asks/${askId}/operations/${operationId}/`));
+    }
+
+    static async formAsk(askId: number) {
+        return this.safeRequest(this.getInstance().put(`asks/${askId}/form/`, { status: "f" }));
+    }
+
+    static async deleteAsk(askId: number) {
+        return this.safeRequest(this.getInstance().delete(`asks/${askId}/`));
+    }
+
+    static async updateProfile(email?: string, password?: string) {
+        const body: Record<string, any> = {};
         if (email) body.email = email;
         if (password) body.password = password;
-
-        return Ajax.put({url, body})
-    },
-
-    async getAsks(filters?: { date_from?: string; date_to?: string; status?: string }) {
-        const query = new URLSearchParams(filters).toString();
-        const url = `${this.BASE_URL}/asks/?${query}`;
-        return Ajax.get(url);
-    },         
-    async getAskById(id: number){
-        const url = this.BASE_URL + `/asks/${id}/`;
-        return Ajax.get(url)
-    },
-    
-    async addOperationToDraft(id: number){
-        const url = this.BASE_URL + `/operations/${id}/draft/`;
-        const body = {}
-        return Ajax.post({url, body});
-    },
-    async changeAddFields(id:number, firstOperand?: boolean) {
-        console.log(id);
-        console.log(firstOperand);
-        const url = this.BASE_URL + `/asks/${id}/edit/`;
-        const body: any = {};
-        body.first_operand = firstOperand;
-        return Ajax.put({url, body})
-    },
-    async changeOperationFields(operationId: number, askId: number, secondOperand?: boolean){
-        const url = this.BASE_URL + `/asks/${askId}/operations/${operationId}/`;
-        const body = {
-            second_operand: secondOperand
-        }
-        return Ajax.put({url, body})
-    },
-    async deleteOperationFromDraft(askId: number, operationId: number) {
-        const url = this.BASE_URL + `/asks/${askId}/operations/${operationId}/`;
-        const body = {}
-        return Ajax.delete({url, body})
-    },
-    async formAsk(askId: number) {
-        const url = this.BASE_URL + `/asks/${askId}/form/`;
-        const body = {
-            status: 'f'
-        }
-        return Ajax.put({url, body});
-    },
-    async deleteAsk(askId: number) {
-        const url = this.BASE_URL + `/asks/${askId}/`;
-        const body = {}
-        return Ajax.delete({url, body});
+        return this.safeRequest(this.getInstance().put("users/profile/", body));
     }
-};
+}
 
 export default API;

@@ -160,7 +160,6 @@ const AskPage = () => {
                                     <option value="false">0</option>
                                     <option value="true">1</option>
                                 </select>
-                                <span className="result">Результат = </span>
                             </div>
                             {isEditable && (
                                 <button
