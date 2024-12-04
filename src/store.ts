@@ -1,12 +1,18 @@
 // store/index.ts
-import { configureStore } from '@reduxjs/toolkit';
+import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import operationsReducer from './slices/operationsSlice';
+import userReducer from "./slices/userSlice";
 
-export const store = configureStore({
-    reducer: {
-        operations: operationsReducer,
-    },
+const rootReducer = combineReducers({
+    operations: operationsReducer,
+    user: userReducer,
+});
+
+const store = configureStore({
+    reducer: rootReducer,
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
+
+export default store;

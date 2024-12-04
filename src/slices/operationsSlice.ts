@@ -16,9 +16,15 @@ const operationsSlice = createSlice({
         setName: (state, action: PayloadAction<string>) => {
             state.name = action.payload;
         },
+        resetFilters(state) {
+            Object.assign(state, initialState); // Сбросить состояние к начальному
+        },
     },
 });
 
-export const { setName } = operationsSlice.actions;
+export const { 
+    setName,
+    resetFilters,
+} = operationsSlice.actions;
 
 export default operationsSlice.reducer;
