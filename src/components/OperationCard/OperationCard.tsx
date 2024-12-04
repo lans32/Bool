@@ -1,13 +1,36 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useDispatch } from "react-redux";
 import { T_Operation } from '../../modules/types';
 import './OperationCard.css';
+import API from "../../api/API";
+import { setDraftAsk, setTotalOperationCount } from "../../slices/askSlice"; 
 
 type OperationCardProps = {
     operation: T_Operation;
 };
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation }) => {
+    const dispatch = useDispatch();
+
+    const handleAddToAsk = async (event: React.MouseEvent) => {
+        event.stopPropagation();
+        try {
+            const response = await API.addOperationToDraft(Number(operation.id));
+            const data = await response.json();
+            if (data.draft_ask_id) {
+                // Обновляем состояние заявки в Redux
+                dispatch(setDraftAsk({
+                    draftAskId: data.draft_ask_id,
+                    count: data.count
+                }));
+                // Обновляем общий счетчик операций в заявке
+                dispatch(setTotalOperationCount(data.count));
+            }
+        } catch (error) {
+            console.error("Ошибка при добавлении операции в заявку:", error);
+        }
+    };
     return (
         <div className="card">
             {/* Верхняя часть карточки с заголовком */}
@@ -34,11 +57,11 @@ const OperationCard: React.FC<OperationCardProps> = ({ operation }) => {
                         <span className="button_text">Подробнее</span>
                     </div>
                 </Link>
-                <form method="post" action={`/operation/${operation.id}/add_operation/`}>
-                    <button className="button" type="submit">
+                <div>
+                    <button onClick={handleAddToAsk} className="button">
                         <span className="button_text">Добавить заявку</span>
                     </button>
-                </form>
+                </div>
             </div>
         </div>
     );        

@@ -48,7 +48,7 @@ const OperationPage: React.FC = () => {
 
 
   if (!operation) {
-    return <div>Операция не найдена</div>;
+    return <div className="loading-gif"><img src="/loading.webp"></img></div>;
   }
 
   return (

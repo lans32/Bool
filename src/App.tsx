@@ -11,6 +11,8 @@ import OperationPage from './pages/OperationPage/OperationPage'
 import Breadcrumbs from './components/Breadcrumbs/Breadcrumbs'
 import AuthPage from './pages/AuthPage/AuthPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
+import AskPage from './pages/AskPage/AskPage'
+import AsksPage from './pages/AsksPage/AsksPage'
 
 
 
@@ -30,7 +32,10 @@ const App = () => {
           <Route path="/operations" element={<OperationsPage />} />
           <Route path="/operation/:id" element={<OperationPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/operation/:id" element={<ProfilePage />} />
+          <Route path="/asks/:id" element={<AskPage />} />
+          <Route path="/asks" element={<AsksPage />} />
         </Routes>
       </main>
     </>

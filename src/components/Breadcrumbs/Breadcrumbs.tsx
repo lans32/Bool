@@ -13,6 +13,7 @@ const Breadcrumbs: React.FC = () => {
     'operation': 'Описание',
     'auth': 'Авторизация',
     'asks': 'Заявки',
+    'profile': 'Профиль'
   };
 
   return (
