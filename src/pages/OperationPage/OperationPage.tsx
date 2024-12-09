@@ -17,7 +17,7 @@ const OperationPage: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const response = await fetch(`http://192.168.31.50:8000/api/operations/${id}`, { signal: AbortSignal.timeout(1000) });
+      const response = await fetch(`http://localhost:8000/api/operations/${id}`, { signal: AbortSignal.timeout(1000) });
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
       setOperation(data);

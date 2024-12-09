@@ -17,7 +17,7 @@ const OperationsPage = () => {
 
     const fetchData = async () => {
         try {
-          const response = await fetch(`http://192.168.31.50:8000/api/operations/?name=${name.toLowerCase()}`);
+          const response = await fetch(`http://localhost:8000/api/operations/?name=${name.toLowerCase()}`);
           if (!response.ok) throw new Error('Network response was not ok');
           const result = await response.json();
           setOperations(result.operations);
