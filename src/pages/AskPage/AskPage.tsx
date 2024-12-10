@@ -17,9 +17,9 @@ interface Operation {
 }
 
 interface Ask {
-    id: string;
+    id: number;
     first_operand: boolean | null;
-    operations: { operation: Operation; second_operand: boolean | null }[];
+    operations: { operation: Operation; second_operand: boolean | null; result: boolean | null;}[];
     created_at: string;
     status: string;
 }
@@ -86,59 +86,40 @@ const AskPage = () => {
             console.error('Ошибка при удалении операции:', error);
         }
     };
-
-    const handleFirstOperandBlur = async (e: React.FocusEvent<HTMLInputElement>) => {
-        const newFirstOperand = e.target.value;
-        let operandToSend: boolean | undefined;
-
-        if (newFirstOperand === 'true') {
-            operandToSend = true;
-        } else if (newFirstOperand === 'false') {
-            operandToSend = false;
-        }
-
-        if (operandToSend !== undefined && operandToSend !== ask?.first_operand) {
-            await API.changeAddFields(Number(id), operandToSend); 
-        }
-    };
+    
 
     return (
         <div>
             <div className="ask_title">Заявка № {ask.id}</div>
-
+    
             <div className="container">
-            <div className="input-section">
-                <label htmlFor="a">Введите значение первого операнда:</label>
-                <select
-                    id="a"
-                    name="a"
-                    value={ask.first_operand?.toString()}
-                    onChange={async (e) => {
-                        const newFirstOperand = e.target.value === "true";
-                        if (newFirstOperand !== ask.first_operand) {
-                            await API.changeAddFields(Number(id), newFirstOperand);
-                            setAsk({ ...ask, first_operand: newFirstOperand });
-                        }
-                    }}
-                    onBlur={async (e) => {
-                        const newFirstOperand = e.target.value === "true";
-                        if (newFirstOperand !== ask.first_operand) {
-                            await API.changeAddFields(Number(id), newFirstOperand);
-                            setAsk({ ...ask, first_operand: newFirstOperand });
-                        }
-                    }}
-                >
-                    <option value="false">0</option>
-                    <option value="true">1</option>
-                </select>
-            </div>
-
+                <div className="input-section">
+                    <label htmlFor="a">Введите значение первого операнда:</label>
+                    <select
+                        id="a"
+                        name="a"
+                        value={ask.first_operand?.toString()}
+                        onChange={async (e) => {
+                            const newFirstOperand = e.target.value === "true";
+                            if (newFirstOperand !== ask.first_operand) {
+                                await API.changeAddFields(Number(id), newFirstOperand);
+                                setAsk({ ...ask, first_operand: newFirstOperand });
+                            }
+                        }}
+                        disabled={!isEditable}  // Отключение поля при статусах 'f' или 'c'
+                    >
+                        <option value="false">0</option>
+                        <option value="true">1</option>
+                    </select>
+                </div>
+    
                 {ask.operations.map((operationData, index) => {
-                    const { operation, second_operand } = operationData;
+                    const { operation, second_operand, result } = operationData;
+
                     return (
                         <div className="operation" key={operation.id}>
                             <div className="operation-title">
-                                Операция {index + 1}: {operation.description}
+                                Операция {index + 1}: {operation.operator_name}
                             </div>
                             <div className="operation-content">
                                 <img src={operation.photo} alt={operation.description} />
@@ -154,14 +135,26 @@ const AskPage = () => {
                                             ...updatedOperations[index],
                                             second_operand: newSecondOperand,
                                         };
-                                        setAsk({ ...ask, operations: updatedOperations });
+
+                                        try {
+                                            await API.changeOperationFields(operation.id, ask.id, newSecondOperand);
+                                            setAsk({ ...ask, operations: updatedOperations });
+                                        } catch (error) {
+                                            console.error("Ошибка при обновлении второго операнда:", error);
+                                        }
                                     }}
+                                    disabled={!isEditable}  // Отключение поля при статусах 'f' или 'c'
                                 >
                                     <option value="false">0</option>
                                     <option value="true">1</option>
                                 </select>
                             </div>
-                            {isEditable && (
+                            {!isEditable && (
+                                <div className="operation-result">
+                                    <strong>Результат:</strong> {result !== null ? (result ? '1' : '0') : 'N/A'}
+                                </div>
+                            )}
+                            {isEditable && (  // Отключение кнопки удаления операции при статусах 'f' или 'c'
                                 <button
                                     type="button"
                                     onClick={() => handleOperationDelete(operation.id.toString(), index)}
@@ -173,7 +166,7 @@ const AskPage = () => {
                     );
                 })}
 
-                {isEditable && (
+                {isEditable && (  // Отключение кнопки "Вычислить" и "Удалить заявку" при статусах 'f' или 'c'
                     <>
                         <div className="button-container">
                             <button type="button" onClick={handleSubmit}>
@@ -196,7 +189,7 @@ const AskPage = () => {
                 )}
             </div>
         </div>
-    );
+    );    
 };
 
 export default AskPage;

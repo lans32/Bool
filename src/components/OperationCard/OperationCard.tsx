@@ -1,36 +1,35 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from "react-redux";
 import { T_Operation } from '../../modules/types';
 import './OperationCard.css';
 import API from "../../api/API";
-import { setDraftAsk, setTotalOperationCount } from "../../slices/askSlice"; 
+import { fetchOperations } from '../../slices/operationsSlice';
+import { useAppDispatch } from '../../hooks'; 
 
 type OperationCardProps = {
     operation: T_Operation;
 };
 
 const OperationCard: React.FC<OperationCardProps> = ({ operation }) => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
     const handleAddToAsk = async (event: React.MouseEvent) => {
         event.stopPropagation();
         try {
+            // Выполняем запрос на добавление операции
             const response = await API.addOperationToDraft(Number(operation.id));
-            const data = await response.json();
-            if (data.draft_ask_id) {
-                // Обновляем состояние заявки в Redux
-                dispatch(setDraftAsk({
-                    draftAskId: data.draft_ask_id,
-                    count: data.count
-                }));
-                // Обновляем общий счетчик операций в заявке
-                dispatch(setTotalOperationCount(data.count));
+            
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
             }
+
+            // После успешного выполнения обновляем состояние через fetchOperations
+            dispatch(fetchOperations());
         } catch (error) {
             console.error("Ошибка при добавлении операции в заявку:", error);
         }
     };
+
     return (
         <div className="card">
             {/* Верхняя часть карточки с заголовком */}
