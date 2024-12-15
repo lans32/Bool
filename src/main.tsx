@@ -1,9 +1,11 @@
+//main.tsx
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { BrowserRouter } from 'react-router-dom';
 import { Provider } from 'react-redux'; // Импортируем Provider
-import store from './store';
+import { PersistGate } from "redux-persist/integration/react";
+import store, { persistor } from './store';
 
 import AuthPage from './pages/AuthPage/AuthPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
@@ -24,13 +26,15 @@ async function main() {
   // Получение CSRF-токена перед инициализацией React-приложения
   await initializeCsrfToken();
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <BrowserRouter> {/* basename="/Bool" */}
-    <Provider store={store}> {/* Оборачиваем приложение в Provider */}
-      <App />
-    </Provider>
-  </BrowserRouter>
-);
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <BrowserRouter>
+      <Provider store={store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <App />
+        </PersistGate>
+      </Provider>
+    </BrowserRouter>
+  );
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

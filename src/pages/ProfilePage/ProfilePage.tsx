@@ -1,3 +1,4 @@
+//ProfilePage.tsx
 import { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
@@ -40,7 +41,11 @@ const ProfilePage = () => {
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              const newEmail = e.target.value;
+              setEmail(newEmail);
+              dispatch(login(newEmail));
+            }}
             required
           />
         </label>
