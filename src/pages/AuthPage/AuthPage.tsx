@@ -1,16 +1,19 @@
 import { FC, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Заменили useRouter на useNavigate
+import { useNavigate } from "react-router-dom";
 import { login } from "../../slices/userSlice";
 import API from "../../api/API";
 import "./AuthPage.css";
+
 const Auth: FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isRegister, setIsRegister] = useState(false);
     const dispatch = useDispatch();
-    const navigate = useNavigate(); // Используем useNavigate для навигации
+    const navigate = useNavigate();
+
     const toggleAuthMode = () => setIsRegister((prev) => !prev);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
     
@@ -24,7 +27,7 @@ const Auth: FC = () => {
                     const authData = await authResponse.json();
     
                     if (authData.status === "ok") {
-                        dispatch(login(authData.username)); 
+                        dispatch(login({ username: authData.username, isStaff: authData.is_staff }));
                         navigate("/operations");
                     } else {
                         console.log("Ошибка при авторизации");
@@ -37,7 +40,7 @@ const Auth: FC = () => {
                 const data = await response.json();
     
                 if (data.status === "ok") {
-                    dispatch(login(data.username));
+                    dispatch(login({ username: data.username, isStaff: data.is_staff }));
                     navigate("/operations");
                 } else {
                     console.log("Неверный логин или пароль");
@@ -48,6 +51,7 @@ const Auth: FC = () => {
             alert("Произошла ошибка. Попробуйте снова.");
         }
     };
+
     return (
         <div className="auth-page">
             <h1>{isRegister ? "Регистрация" : "Вход"}</h1>
@@ -85,4 +89,5 @@ const Auth: FC = () => {
         </div>
     );
 };
+
 export default Auth;

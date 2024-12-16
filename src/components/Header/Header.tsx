@@ -1,5 +1,5 @@
-import { Link, useNavigate  } from 'react-router-dom';
-import {  FC, useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { FC, useEffect, useState } from 'react';
 import './Header.css';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -8,10 +8,10 @@ import { resetFilters } from "../../slices/operationsSlice";
 import API from "../../api/API";
 import { getCookie, deleteCookie } from "../../api/Utils";
 
-const Header = () => {
+const Header: FC = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Хук для навигации
-  const { isLoggedIn, userName } = useSelector((state: RootState) => state.user);
+  const navigate = useNavigate();
+  const { isLoggedIn, userName, isStaff } = useSelector((state: RootState) => state.user);
   const [menuActive, setMenuActive] = useState(false);
 
   const toggleMenu = () => {
@@ -26,7 +26,7 @@ const Header = () => {
           const response = await API.getSession();
           const data = await response.json();
           if (data.status === "ok" && data.username) {
-            dispatch(login(data.username));
+            dispatch(login({ username: data.username, isStaff: data.is_staff }));
           }
         } catch (error) {
           console.error("Error fetching session:", error);
@@ -48,12 +48,9 @@ const Header = () => {
     }
   };
   
-
   return (
     <header className="header">
       <div className={`header__container _container ${menuActive ? 'active' : ''}`}>
-        
-        {/* Логотип и название сайта в одном контейнере */}
         <div className="header__branding">
           <Link to="/" className="header__logo">
             <img src="/logo.png" alt="Logo" />
@@ -61,7 +58,6 @@ const Header = () => {
           <span className="header__title">Логика</span>
         </div>
 
-        {/* Бургер-меню */}
         <div
           className={`header__burger ${menuActive ? 'active' : ''}`}
           onClick={toggleMenu}
@@ -73,7 +69,7 @@ const Header = () => {
           <ul className="menu__list">
             <li className="menu__item">
               <Link
-                to="/operations"
+                to={isStaff ? "/edit-operations" : "/operations"}
                 className="menu__link menu__link_active"
                 onClick={toggleMenu}
               >

@@ -13,8 +13,7 @@ import AuthPage from './pages/AuthPage/AuthPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import AskPage from './pages/AskPage/AskPage'
 import AsksPage from './pages/AsksPage/AsksPage'
-
-
+import EditOperationsPage from './pages/EditOperationsPage/EditOperationsPage';
 
 const App = () => {
   const location = useLocation();
@@ -36,6 +35,7 @@ const App = () => {
           <Route path="/operation/:id" element={<ProfilePage />} />
           <Route path="/asks/:id" element={<AskPage />} />
           <Route path="/asks" element={<AsksPage />} />
+          <Route path="/edit-operations" element={<EditOperationsPage />} />
         </Routes>
       </main>
     </>
