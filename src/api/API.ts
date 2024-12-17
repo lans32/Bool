@@ -2,6 +2,7 @@
 
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { getCookie } from "./Utils";
+import { Operation } from './Types'; // Убедитесь, что импортируете правильный тип
 
 interface LoginParams {
     email: string;
@@ -149,6 +150,32 @@ class API {
         if (email) body.email = email;
         if (password) body.password = password;
         return this.safeRequest(this.getInstance().put("users/profile/", body));
+    }
+
+    static async createOperation(operationData: Omit<Operation, 'id'>) {
+        return this.safeRequest(
+            this.getInstance().post("operations/", operationData)
+        );
+    }
+
+    static async updateOperation(id: number, operationData: Omit<Operation, 'id'>) {
+        return this.safeRequest(
+            this.getInstance().put(`operations/${id}/`, operationData)
+        );
+    }
+
+    static async deleteOperation(id: number) {
+        return this.safeRequest(
+            this.getInstance().delete(`operations/${id}/`)
+        );
+    }
+
+    static async operationsImageUpdate(id: string, data: FormData) {
+        return this.safeRequest(this.getInstance().put(`/operations/${id}/image/`, data, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        }));
     }
 }
 

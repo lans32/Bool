@@ -6,11 +6,12 @@ const Breadcrumbs: React.FC = () => {
   const location = useLocation();
   const pathnames = location.pathname.split('/').filter((x) => x && x !== 'null');
   
-  
   const breadcrumbsMapping: Record<string, string> = {
     '': 'Главная',
     'operations': 'Операции',
+    'edit-operations': 'Редактировать операции', // Добавлено
     'operation': 'Описание',
+    'edit-operation': 'Редактировать детали операции', // Добавлено
     'auth': 'Авторизация',
     'asks': 'Заявки',
     'profile': 'Профиль'
@@ -37,12 +38,27 @@ const Breadcrumbs: React.FC = () => {
               <Link to="/operations">
                 {breadcrumbsMapping[pathname]}
               </Link>
+            ) : pathname === 'edit-operations' ? ( // Обработка edit-operations
+              <>
+                <Link to="/operations">{breadcrumbsMapping['operations']}</Link>
+                {' > '}
+                <span>{breadcrumbsMapping[pathname]}</span>
+              </>
+            ) : pathname === 'edit-operation' ? ( // Обработка edit-operation
+              <>
+                <Link to="/operations">{breadcrumbsMapping['operations']}</Link>
+                {' > '}
+                <Link to="/edit-operations">{breadcrumbsMapping['edit-operations']}</Link>
+                {' > '}
+                <span>{breadcrumbsMapping[pathname]}</span>
+              </>
             ) : pathname === 'operation' ? (
               <>
                 <Link to="/operations">{breadcrumbsMapping['operations']}</Link>
                 {' > '}
                 <Link to={`${location.pathname}`}>
-                {breadcrumbsMapping[pathname]}</Link>
+                  {breadcrumbsMapping[pathname]}
+                </Link>
               </>
             ) : isLast ? (
               <span>{breadcrumbsMapping[pathname] || pathname}</span>

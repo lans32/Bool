@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
 import { fetchOperations } from '../../slices/operationsSlice';
-import { Api } from '../../api/Api_generated';
-import { Operation } from '../../api/Api_generated';
-
-const api = new Api();
+import API from '../../api/API';
+import { Operation } from '../../api/Types';
+import './EditOperationsPage.css';
 
 const EditOperationsPage: React.FC = () => {
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     const { operations, loading, error } = useAppSelector((state) => state.operations);
     const [newOperation, setNewOperation] = useState<Partial<Operation>>({});
     const [localError, setLocalError] = useState<string | null>(null);
@@ -23,19 +24,20 @@ const EditOperationsPage: React.FC = () => {
                 return;
             }
 
-            const operationData: Operation = {
+            const operationData: Omit<Operation, 'id'> = {
                 name: newOperation.name,
                 operator_name: newOperation.operator_name,
-                description: newOperation.description || null,
-                photo: newOperation.photo || null,
-                value_0: newOperation.value_0 || null,
-                value_A: newOperation.value_A || null,
-                value_B: newOperation.value_B || null,
-                value_AB: newOperation.value_AB || null
+                description: newOperation.description || '',
+                photo: newOperation.photo || '',
+                status: 'a',
+                value_0: newOperation.value_0 || false,
+                value_A: newOperation.value_A || false,
+                value_B: newOperation.value_B || false,
+                value_AB: newOperation.value_AB || false
             };
 
-            const response = await api.operations.operationsCreate(operationData);
-            if (response.data) {
+            const response = await API.createOperation(operationData);
+            if (response.ok) {
                 dispatch(fetchOperations());
                 setNewOperation({});
             }
@@ -44,27 +46,19 @@ const EditOperationsPage: React.FC = () => {
         }
     };
 
-    const handleEditOperation = async (id: number) => {
+    const handleDeleteOperation = async (id: number) => {
         try {
-            const operation = operations.find(op => op.id === id);
-            if (!operation) return;
-
-            const response = await api.operations.operationsUpdate(id.toString(), operation);
-            if (response.data) {
+            const response = await API.deleteOperation(id);
+            if (response.ok) {
                 dispatch(fetchOperations());
             }
         } catch (error) {
-            setLocalError('Failed to edit operation');
+            setLocalError('Failed to delete operation');
         }
     };
 
-    const handleDeleteOperation = async (id: number) => {
-        try {
-            await api.operations.operationsDelete(id.toString());
-            dispatch(fetchOperations());
-        } catch (error) {
-            setLocalError('Failed to delete operation');
-        }
+    const handleNavigateToEdit = (id: number) => {
+        navigate(`/edit-operation/${id}`);
     };
 
     if (loading) return <div>Loading...</div>;
@@ -72,14 +66,14 @@ const EditOperationsPage: React.FC = () => {
 
     return (
         <div className="operations-admin-page">
-            <h1>Operations Management</h1>
+            <h1>Управление операциями</h1>
             <table>
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Operator Name</th>
-                        <th>Description</th>
-                        <th>Actions</th>
+                        <th>Имя</th>
+                        <th>Имя оператора</th>
+                        <th>Описание</th>
+                        <th>Действия</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,33 +83,33 @@ const EditOperationsPage: React.FC = () => {
                             <td>{operation.operator_name}</td>
                             <td>{operation.description}</td>
                             <td>
-                                <button onClick={() => handleEditOperation(operation.id)}>Edit</button>
-                                <button onClick={() => handleDeleteOperation(operation.id)}>Delete</button>
+                                <button onClick={() => handleNavigateToEdit(operation.id)}>Редактировать</button>
+                                <button className="delete-button" onClick={() => handleDeleteOperation(operation.id)}>Удалить</button>
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
             <div>
-                <h2>Add New Operation</h2>
+                <h2>Добавить новую операцию</h2>
                 <input
                     type="text"
-                    placeholder="Name"
+                    placeholder="Имя"
                     value={newOperation.name || ''}
                     onChange={(e) => setNewOperation({ ...newOperation, name: e.target.value })}
                 />
                 <input
                     type="text"
-                    placeholder="Operator Name"
+                    placeholder="Имя оператора"
                     value={newOperation.operator_name || ''}
                     onChange={(e) => setNewOperation({ ...newOperation, operator_name: e.target.value })}
                 />
                 <textarea
-                    placeholder="Description"
+                    placeholder="Описание"
                     value={newOperation.description || ''}
                     onChange={(e) => setNewOperation({ ...newOperation, description: e.target.value })}
                 />
-                <button onClick={handleAddOperation}>Add Operation</button>
+                <button onClick={handleAddOperation}>Добавить операцию</button>
             </div>
         </div>
     );
