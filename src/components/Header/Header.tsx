@@ -23,13 +23,17 @@ const Header: FC = () => {
     if (sessionId) {
       const checkSession = async () => {
         try {
-          const response = await API.getSession();
-          const data = await response.json();
-          if (data.status === "ok" && data.username) {
-            dispatch(login({ username: data.username, isStaff: data.is_staff }));
+          const sessionData = await API.getSession();
+          if (sessionData.username) {
+            dispatch(
+              login({ username: sessionData.username, isStaff: sessionData.isStaff })
+            ); // Обновляем Redux с новыми данными
+          } else {
+            dispatch(logout());
           }
         } catch (error) {
-          console.error("Error fetching session:", error);
+          console.error("Ошибка при проверке сессии:", error);
+          dispatch(logout());
         }
       };
       checkSession();
@@ -38,13 +42,13 @@ const Header: FC = () => {
   
   const handleLogout = async () => {
     try {
-      dispatch(logout());
-      dispatch(resetFilters());
       await API.logout();
       deleteCookie("session_id");
-      navigate("/");
+      dispatch(logout());
+      dispatch(resetFilters());
+      navigate("/"); // Переход на главную страницу
     } catch (error) {
-      console.error("Error during logout:", error);
+      console.error("Ошибка при выходе из системы:", error);
     }
   };
   

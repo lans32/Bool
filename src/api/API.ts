@@ -18,6 +18,10 @@ interface APIResponse<T = any> {
 
 class API {
     private static instance: AxiosInstance;
+    private static navigate: any;
+    static setNavigate(navigate: any) {
+        this.navigate = navigate;
+    }
 
     private static getInstance(): AxiosInstance {
         if (!this.instance) {
@@ -46,6 +50,27 @@ class API {
             this.instance.interceptors.response.use(
                 (response) => response,
                 (error) => {
+                    const { response } = error;
+
+                    if (response) {
+                        const { status } = response;
+
+                        // Проверка на статус 401 или 403
+                        if (status === 401 || status === 403) {
+                            if (this.navigate) {
+                                this.navigate("/error/403");  // Переход на страницу ошибки 403
+                            } else {
+                                window.location.href = "/error/403";  // Для случаев, когда navigate недоступен
+                            }
+                        } else if (status === 404) {
+                            if (this.navigate) {
+                                this.navigate("/error/404");  // Переход на страницу ошибки 404
+                            } else {
+                                window.location.href = "/error/404";  // Для случаев, когда navigate недоступен
+                            }
+                        }
+                    }
+
                     console.error("[API Error]:", error.response?.data || error.message);
                     return Promise.reject(error);
                 }
@@ -86,7 +111,15 @@ class API {
     }
 
     static async getSession() {
-        return this.safeRequest(this.getInstance().get("users/check/"));
+        const response = await this.safeRequest(this.getInstance().get("users/check/"));
+        if (response.ok) {
+            const data = await response.json();
+            return { 
+                username: data.username, 
+                isStaff: data.is_staff 
+            };
+        }
+        return { username: null, isStaff: false };
     }
 
     static async getOperations(postfix?: string) {
@@ -176,6 +209,13 @@ class API {
             'Content-Type': 'multipart/form-data'
           }
         }));
+    }
+
+    static async completeAsk(askId: number) {
+        return this.safeRequest(this.getInstance().put(`asks/${askId}/complete/`, { status: "c" }));
+    }
+    static async rejectedAsk(askId: number) {
+        return this.safeRequest(this.getInstance().put(`asks/${askId}/complete/`, { status: "r" }));
     }
 }
 

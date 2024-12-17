@@ -1,19 +1,16 @@
-
 import React, { useEffect, useState } from 'react';
 import './OperationPage.css';
 import { OperationsMocks } from '../../modules/mocks';
 import { T_Operation } from '../../modules/types';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
-import defaultimg from '../../../public/default.jpg'
-
-
+import defaultimg from '../../../public/default.jpg';
 
 const OperationPage: React.FC = () => {
-  const { id } = useParams<{id: string}>();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const [operation, setOperation] = useState<T_Operation | null>(null);
   const [isMock, setIsMock] = useState(false);
-
 
   const fetchData = async () => {
     try {
@@ -26,12 +23,18 @@ const OperationPage: React.FC = () => {
       createMock();
     }
   };
-  
 
   const createMock = () => {
     setIsMock(true);
-    setOperation(OperationsMocks.find(operation => operation?.id == parseInt(id as string)) as T_Operation)
-}
+    const mockOperation = OperationsMocks.find(operation => operation?.id === parseInt(id as string)) as T_Operation;
+
+    if (mockOperation) {
+      setOperation(mockOperation);
+    } else {
+      // Редирект на страницу 404, если операция не найдена
+      navigate(`/error/404`, { replace: true });
+    }
+  }
 
   useEffect(() => {
     if (!isMock) {
@@ -45,10 +48,8 @@ const OperationPage: React.FC = () => {
     };
   }, [id, isMock]);
 
-
-
   if (!operation) {
-    return <div className="loading-gif"><img src="/loading.webp"></img></div>;
+    return <div className="loading-gif"><img src="/loading.webp" alt="Loading" /></div>;
   }
 
   return (
@@ -57,7 +58,6 @@ const OperationPage: React.FC = () => {
         <div className="col-md-10">
           <div className="product-operation-container">
             <h1 className="product-title">{operation.name}</h1>
-            
             <div className="operation-details-container">
               <div className="product-operations">
                 <img
@@ -69,7 +69,6 @@ const OperationPage: React.FC = () => {
                 <div className="info">
                   <p><strong>Оператор:</strong> {operation.operator_name}</p>
                   <p><strong>Описание:</strong> {operation.description}</p>
-                  
                   <h2>Таблица истинности</h2>
                   <table className="truth-table">
                     <thead>

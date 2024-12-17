@@ -15,6 +15,7 @@ import AskPage from './pages/AskPage/AskPage'
 import AsksPage from './pages/AsksPage/AsksPage'
 import EditOperationsPage from './pages/EditOperationsPage/EditOperationsPage';
 import EditOperationPage from './pages/EditOperationPage/EditOperationPage';
+import ErrorPage from './pages/ErrorPage/ErrorPage';
 
 const App = () => {
   const location = useLocation();
@@ -38,6 +39,7 @@ const App = () => {
           <Route path="/asks" element={<AsksPage />} />
           <Route path="/edit-operations" element={<EditOperationsPage />} />
           <Route path="/edit-operation/:id" element={<EditOperationPage />} />
+          <Route path="/error/:errorCode" element={<ErrorPage />} />
         </Routes>
       </main>
     </>
