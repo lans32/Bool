@@ -39,7 +39,10 @@ const AsksPage = () => {
   };
 
   useEffect(() => {
-    fetchAsks();
+    fetchAsks(); // Initial fetch
+    const intervalId = setInterval(fetchAsks, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup on unmount
   }, [status]);
 
   useEffect(() => {
