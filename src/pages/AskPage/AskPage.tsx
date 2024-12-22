@@ -1,6 +1,8 @@
+// AskPage.tsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import API from "../../api/API";
+import { useAppDispatch } from '../../hooks.ts';
+import { fetchAskById, formAsk, deleteAsk, deleteOperationFromDraft, changeFirstOperand, changeOperationFields } from '../../slices/askSlice';
 import "./AskPage.css";
 
 interface Operation {
@@ -27,6 +29,7 @@ interface Ask {
 const AskPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
     const [ask, setAsk] = useState<Ask | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -34,13 +37,14 @@ const AskPage = () => {
 
     useEffect(() => {
         const getAskDetails = async () => {
-            if (!id)  return;
+            if (!id) return;
             try {
-                const response = await API.getAskById(Number(id));
-                console.log("Response status:", response.status);
-                const data = await response.json();
-                console.log("Data received:", data);
-                setAsk(data);
+                const action = await dispatch(fetchAskById(Number(id)));
+                if (fetchAskById.fulfilled.match(action)) {
+                    setAsk(action.payload);
+                } else {
+                    setError(action.payload as string);
+                }
             } catch (error) {
                 console.error("Ошибка при загрузке данных о заявке:", error);
                 setError("Не удалось загрузить данные о заявке");
@@ -49,7 +53,7 @@ const AskPage = () => {
             }
         };
         getAskDetails();
-    }, [id]);
+    }, [id, dispatch]);
 
     if (loading) return <div>Загрузка...</div>;
     if (error) return <div>{error}</div>;
@@ -59,8 +63,12 @@ const AskPage = () => {
 
     const handleSubmit = async () => {
         try {
-            await API.formAsk(Number(id));
-            navigate('/');
+            const action = await dispatch(formAsk(Number(id)));
+            if (formAsk.fulfilled.match(action)) {
+                navigate('/');
+            } else {
+                console.error('Ошибка при завершении заявки:', action.payload);
+            }
         } catch (error) {
             console.error('Ошибка при завершении заявки:', error);
         }
@@ -68,8 +76,12 @@ const AskPage = () => {
 
     const handleDelete = async () => {
         try {
-            await API.deleteAsk(Number(id));
-            navigate('/');
+            const action = await dispatch(deleteAsk(Number(id)));
+            if (deleteAsk.fulfilled.match(action)) {
+                navigate('/');
+            } else {
+                console.error('Ошибка при удалении:', action.payload);
+            }
         } catch (error) {
             console.error('Ошибка при удалении:', error);
         }
@@ -78,15 +90,18 @@ const AskPage = () => {
     const handleOperationDelete = async (operationId: string, index: number) => {
         if (!ask) return;
         try {
-            await API.deleteOperationFromDraft(Number(id), Number(operationId));
-            const updatedOperations = [...ask.operations];
-            updatedOperations.splice(index, 1); // Удаляем операцию из массива
-            setAsk({ ...ask, operations: updatedOperations });
+            const action = await dispatch(deleteOperationFromDraft({ id: Number(id), operationId: Number(operationId) }));
+            if (deleteOperationFromDraft.fulfilled.match(action)) {
+                const updatedOperations = [...ask.operations];
+                updatedOperations.splice(index, 1); // Удаляем операцию из массива
+                setAsk({ ...ask, operations: updatedOperations });
+            } else {
+                console.error('Ошибка при удалении операции:', action.payload);
+            }
         } catch (error) {
             console.error('Ошибка при удалении операции:', error);
         }
     };
-    
 
     return (
         <div>
@@ -102,8 +117,12 @@ const AskPage = () => {
                         onChange={async (e) => {
                             const newFirstOperand = e.target.value === "true";
                             if (newFirstOperand !== ask.first_operand) {
-                                await API.changeAddFields(Number(id), newFirstOperand);
-                                setAsk({ ...ask, first_operand: newFirstOperand });
+                                const action = await dispatch(changeFirstOperand({ id: Number(id), newFirstOperand }));
+                                if (changeFirstOperand.fulfilled.match(action)) {
+                                    setAsk({ ...ask, first_operand: newFirstOperand });
+                                } else {
+                                    console.error('Ошибка при изменении первого операнда:', action.payload);
+                                }
                             }
                         }}
                         disabled={!isEditable}  // Отключение поля при статусах 'f' или 'c'
@@ -136,11 +155,11 @@ const AskPage = () => {
                                             second_operand: newSecondOperand,
                                         };
 
-                                        try {
-                                            await API.changeOperationFields(operation.id, ask.id, newSecondOperand);
+                                        const action = await dispatch(changeOperationFields({ operationId: operation.id, askId: ask.id, newSecondOperand }));
+                                        if (changeOperationFields.fulfilled.match(action)) {
                                             setAsk({ ...ask, operations: updatedOperations });
-                                        } catch (error) {
-                                            console.error("Ошибка при обновлении второго операнда:", error);
+                                        } else {
+                                            console.error("Ошибка при обновлении второго операнда:", action.payload);
                                         }
                                     }}
                                     disabled={!isEditable}  // Отключение поля при статусах 'f' или 'c'
