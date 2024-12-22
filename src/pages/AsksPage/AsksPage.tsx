@@ -1,60 +1,55 @@
 import { useEffect, useState } from 'react';
-import API from '../../api/API';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from "../../store";
+import { useAppDispatch, useAppSelector } from '../../hooks'; // Import the custom hooks
+import { fetchAsks, completeAsk, rejectAsk } from '../../slices/askSlice';
 import './AsksPage.css';
 
 interface Ask {
-    id: string;
-    first_operand: boolean | null;
-    created_at: string;
-    formed_at: string;
-    completed_at: string;
-    status: string;
-    creator: string;
+  id: string;
+  first_operand: boolean | null;
+  created_at: string;
+  formed_at: string;
+  completed_at: string;
+  status: string;
+  creator: string;
 }
 
 const AsksPage = () => {
-  const [asks, setAsks] = useState<Ask[]>([]);
   const [filteredAsks, setFilteredAsks] = useState<Ask[]>([]);
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [status, setStatus] = useState<string>('');
   const [authorFilter, setAuthorFilter] = useState<string>("");
   const navigate = useNavigate();
+  const dispatch = useAppDispatch(); // Use the typed dispatch
 
-  const { isStaff } = useSelector((state: RootState) => state.user);
-  console.log('isStaff:', isStaff);
-
-  const fetchAsks = async () => {
-    try {
-      const response = await API.getAsks({ status });
-      const data = (await response.json()) as Ask[];
-      setAsks(data);
-      setFilteredAsks(data);
-    } catch (error) {
-      console.error('Ошибка при загрузке заявок:', error);
-    }
-  };
+  const { isStaff } = useAppSelector((state) => state.user);
+  const { asks, loading, error } = useAppSelector((state) => state.ask);
 
   useEffect(() => {
-    fetchAsks(); // Initial fetch
-    const intervalId = setInterval(fetchAsks, 5000); // Poll every 5 seconds
+    dispatch(fetchAsks(status));
+    const intervalId = setInterval(() => dispatch(fetchAsks(status)), 10000);
 
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [status]);
+    return () => clearInterval(intervalId);
+  }, [status, dispatch]);
 
   useEffect(() => {
     const filtered = asks.filter((ask) => {
       const askDate = new Date(ask.created_at);
       const fromDate = dateFrom ? new Date(dateFrom) : null;
       const toDate = dateTo ? new Date(dateTo) : null;
+
+      // Устанавливаем конец дня для toDate
+      const toDateEndOfDay = toDate ? new Date(toDate) : null;
+      if (toDateEndOfDay) {
+        toDateEndOfDay.setHours(23, 59, 59, 999); // Устанавливаем время на конец дня
+      }
+
       const statusMatch = status ? ask.status === status : true;
 
       return (
         (!fromDate || askDate >= fromDate) &&
-        (!toDate || askDate <= toDate) &&
+        (!toDateEndOfDay || askDate <= toDateEndOfDay) &&
         (!authorFilter || ask.creator.toLowerCase().includes(authorFilter.toLowerCase())) &&
         statusMatch
       );
@@ -81,32 +76,12 @@ const AsksPage = () => {
   const getFirstOperand = (firstOperand: boolean | null): string =>
     firstOperand === null ? '—' : firstOperand ? 'True' : 'False';
 
-  const handleAccept = async (id: string) => {
-    try {
-      const response = await API.completeAsk(parseInt(id));
-      if (response.ok) {
-        console.log(`Заявка с ID ${id} успешно завершена.`);
-        fetchAsks();
-      } else {
-        console.error(`Не удалось завершить заявку с ID ${id}:`, response);
-      }
-    } catch (error) {
-      console.error(`Ошибка при завершении заявки с ID ${id}:`, error);
-    }
+  const handleAccept = (id: string) => {
+    dispatch(completeAsk(parseInt(id)));
   };
 
-  const handleReject = async (id: string) => {
-    try {
-      const response = await API.rejectedAsk(parseInt(id));
-      if (response.ok) {
-        console.log(`Заявка с ID ${id} успешно отклонена.`);
-        fetchAsks();
-      } else {
-        console.error(`Не удалось отклонить заявку с ID ${id}:`, response);
-      }
-    } catch (error) {
-      console.error(`Ошибка при отклонении заявки с ID ${id}:`, error);
-    }
+  const handleReject = (id: string) => {
+    dispatch(rejectAsk(parseInt(id)));
   };
 
   return (
@@ -169,7 +144,12 @@ const AsksPage = () => {
           {isStaff && <div>Создатель</div>}
           {isStaff && <div>Действия</div>}
         </div>
-        {filteredAsks.map((ask) => (
+        {loading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div>{error}</div>
+        ) : (
+          filteredAsks.map((ask) => (
           <div
             key={ask.id}
             className="ask-row"
@@ -218,9 +198,9 @@ const AsksPage = () => {
                 </div>
             )}
           </div>
-        ))}
+          ))
+        )}
       </div>
-
     </div>
   );
 };
