@@ -1,31 +1,30 @@
-//ProfilePage.tsx
+// ProfilePage.tsx
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState } from "../../store";
-import { login } from "../../slices/userSlice";
-import API from "../../api/API";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { updateProfile } from "../../slices/userSlice";
 import "./ProfilePage.css";
+
 const ProfilePage = () => {
-  const dispatch = useDispatch();
-  const userName = useSelector((state: RootState) => state.user.userName);
+  const dispatch = useAppDispatch();
+  const userName = useAppSelector((state) => state.user.userName);
   const [email, setEmail] = useState(userName || "");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const error = useAppSelector((state) => state.user.error);
+
   const handleSave = async () => {
     setIsLoading(true);
-    setError(null);
     try {
-      await API.updateProfile(email, password || undefined);
-      dispatch(login(email));
+      await dispatch(updateProfile({ email, password })).unwrap();
       setPassword("");
       alert("Данные успешно обновлены.");
-    } catch (err: any) {
-      setError(err.message || "Ошибка при обновлении профиля.");
+    } catch (err) {
+      console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="profile-page">
       <h1>Профиль</h1>
@@ -41,11 +40,7 @@ const ProfilePage = () => {
           <input
             type="email"
             value={email}
-            onChange={(e) => {
-              const newEmail = e.target.value;
-              setEmail(newEmail);
-              dispatch(login(newEmail));
-            }}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </label>
@@ -66,4 +61,5 @@ const ProfilePage = () => {
     </div>
   );
 };
+
 export default ProfilePage;

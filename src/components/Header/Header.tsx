@@ -1,17 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { FC, useEffect, useState } from 'react';
 import './Header.css';
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store";
-import { login, logout } from "../../slices/userSlice";
+import { useAppDispatch, useAppSelector } from "../../hooks";
+import { login, logoutUser } from "../../slices/userSlice";
 import { resetFilters } from "../../slices/operationsSlice";
 import API from "../../api/API";
 import { getCookie, deleteCookie } from "../../api/Utils";
 
 const Header: FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isLoggedIn, userName, isStaff } = useSelector((state: RootState) => state.user);
+  const { isLoggedIn, userName, isStaff } = useAppSelector((state) => state.user);
   const [menuActive, setMenuActive] = useState(false);
 
   const toggleMenu = () => {
@@ -27,31 +26,30 @@ const Header: FC = () => {
           if (sessionData.username) {
             dispatch(
               login({ username: sessionData.username, isStaff: sessionData.isStaff })
-            ); // Обновляем Redux с новыми данными
+            );
           } else {
-            dispatch(logout());
+            dispatch(logoutUser());
           }
         } catch (error) {
           console.error("Ошибка при проверке сессии:", error);
-          dispatch(logout());
+          dispatch(logoutUser());
         }
       };
       checkSession();
     }
   }, [dispatch]);
-  
+
   const handleLogout = async () => {
     try {
-      await API.logout();
+      await dispatch(logoutUser()).unwrap();
       deleteCookie("session_id");
-      dispatch(logout());
       dispatch(resetFilters());
-      navigate("/"); // Переход на главную страницу
+      navigate("/");
     } catch (error) {
       console.error("Ошибка при выходе из системы:", error);
     }
   };
-  
+
   return (
     <header className="header">
       <div className={`header__container _container ${menuActive ? 'active' : ''}`}>
@@ -96,7 +94,7 @@ const Header: FC = () => {
                 </li>
                 <li className="menu__item">
                   <button onClick={handleLogout} className="menu__link menu__link_active">Выйти</button>
-                  </li>
+                </li>
               </>
             ) : (
               <li className="menu__item">

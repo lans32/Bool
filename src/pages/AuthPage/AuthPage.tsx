@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
-import { useDispatch } from "react-redux";
+import { useAppDispatch } from "../../hooks"; // Use the typed dispatch hook
 import { useNavigate } from "react-router-dom";
-import { login } from "../../slices/userSlice";
+import { loginUser } from "../../slices/userSlice"; // Import the new thunk
 import API from "../../api/API";
 import "./AuthPage.css";
 
@@ -9,7 +9,7 @@ const Auth: FC = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isRegister, setIsRegister] = useState(false);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch(); // Use the typed dispatch hook
     const navigate = useNavigate();
 
     const toggleAuthMode = () => setIsRegister((prev) => !prev);
@@ -18,16 +18,13 @@ const Auth: FC = () => {
         e.preventDefault();
     
         try {
-            let response;
             if (isRegister) {
-                response = await API.auth({ email, password });
+                const response = await API.auth({ email, password });
                 const data = await response.json();
                 if (data.status === "Success") {
-                    const authResponse = await API.login({ email, password });
-                    const authData = await authResponse.json();
-    
-                    if (authData.status === "ok") {
-                        dispatch(login({ username: authData.username, isStaff: authData.is_staff }));
+                    // Dispatch loginUser thunk after successful registration
+                    const resultAction = await dispatch(loginUser({ email, password }));
+                    if (loginUser.fulfilled.match(resultAction)) {
                         navigate("/operations");
                     } else {
                         console.log("Ошибка при авторизации");
@@ -36,11 +33,9 @@ const Auth: FC = () => {
                     console.log("Ошибка регистрации");  
                 }
             } else {
-                response = await API.login({ email, password });
-                const data = await response.json();
-    
-                if (data.status === "ok") {
-                    dispatch(login({ username: data.username, isStaff: data.is_staff }));
+                // Dispatch loginUser thunk for login
+                const resultAction = await dispatch(loginUser({ email, password }));
+                if (loginUser.fulfilled.match(resultAction)) {
                     navigate("/operations");
                 } else {
                     console.log("Неверный логин или пароль");
