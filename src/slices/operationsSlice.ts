@@ -1,9 +1,9 @@
 //operationsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import API from '../api/API';
-import { OperationsMocks } from '../modules/mocks';
 import { T_Operation } from '../modules/types';
 import { setDraftAsk } from "./askSlice";
+import { RootState } from '../store'; // Импортируйте RootState
 
 interface OperationsState {
     name: string;
@@ -19,10 +19,11 @@ const initialState: OperationsState = {
     error: null,
 };
 
+// Fetch operations thunk
 export const fetchOperations = createAsyncThunk<
     T_Operation[],
     void,
-    { state: { operations: OperationsState }; rejectValue: string }
+    { state: RootState; rejectValue: string } // Убедитесь, что здесь используется RootState
 >('operations/fetchOperations', async (_, { getState, dispatch, rejectWithValue }) => {
     const { name } = getState().operations;
 
@@ -44,13 +45,44 @@ export const fetchOperations = createAsyncThunk<
         );
     } catch (error) {
         console.error('Error fetching operations:', error);
-
-        return OperationsMocks.filter((operation) =>
-            operation.name.toLowerCase().includes(name.toLowerCase())
-        );
+        return rejectWithValue('Failed to fetch operations');
     }
 });
 
+// Fetch operation details thunk
+export const fetchOperationDetails = createAsyncThunk<
+    T_Operation,
+    string,
+    { rejectValue: string }
+>('operations/fetchOperationDetails', async (id, { rejectWithValue }) => {
+    try {
+        const response = await API.getOperationDetails(id);
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching operation details:', error);
+        return rejectWithValue('Failed to fetch operation details');
+    }
+});
+
+// thunk for adding operation to draft
+export const addOperationToDraft = createAsyncThunk<
+    void,
+    number,
+    { rejectValue: string }
+>('operations/addOperationToDraft', async (operationId, { dispatch, rejectWithValue }) => {
+    try {
+        const response = await API.addOperationToDraft(operationId);
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+
+        // Dispatch fetchOperations to update the state after adding to draft
+        dispatch(fetchOperations());
+    } catch (error) {
+        console.error('Error adding operation to draft:', error);
+        return rejectWithValue('Failed to add operation to draft');
+    }
+});
 
 const operationsSlice = createSlice({
     name: 'operations',
@@ -75,6 +107,21 @@ const operationsSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload || 'Failed to fetch operations';
                 state.operations = [];
+            })
+            .addCase(fetchOperationDetails.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(fetchOperationDetails.fulfilled, (state, action) => {
+                state.loading = false;
+                state.operations = [action.payload];
+            })
+            .addCase(fetchOperationDetails.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload || 'Failed to fetch operation details';
+            })
+            .addCase(addOperationToDraft.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to add operation to draft';
             });
     },
 });

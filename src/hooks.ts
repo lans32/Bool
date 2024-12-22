@@ -1,8 +1,8 @@
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from './store';
 
-// Типизированный dispatch
-export const useAppDispatch: () => AppDispatch = useDispatch;
+// Typed dispatch hook
+export const useAppDispatch = () => useDispatch<AppDispatch>();
 
-// Типизированный selector
+// Typed selector hook
 export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;

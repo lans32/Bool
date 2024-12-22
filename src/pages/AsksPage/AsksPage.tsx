@@ -159,46 +159,33 @@ const AsksPage = () => {
       </div>
 
       <div className="asks-list">
+        <div className="asks-header">
+          <div>№</div>
+          <div>Первый операнд</div>
+          <div>Статус</div>
+          <div>Дата создания</div>
+          <div>Дата формирования</div>
+          <div>Дата завершения</div>
+          {isStaff && <div>Создатель</div>}
+          {isStaff && <div>Действия</div>}
+        </div>
         {filteredAsks.map((ask) => (
           <div
             key={ask.id}
             className="ask-row"
             onClick={() => navigate(`/asks/${ask.id}`)}
           >
-            <div className="ask-row-section">
-              <strong>№</strong>
-              <div>{ask.id}</div>
-            </div>
-            <div className="ask-row-section">
-              <strong>Первый операнд</strong>
-              <div>{getFirstOperand(ask.first_operand)}</div>
-            </div>
-            <div className="ask-row-section">
-              <strong>Статус</strong>
-              <div>{getStatusText(ask.status)}</div>
-            </div>
-            <div className="ask-row-section">
-              <strong>Дата создания</strong>
-              <div>{formatDate(ask.created_at)}</div>
-            </div>
-            <div className="ask-row-section">
-              <strong>Дата формирования</strong>
-              <div>{formatDate(ask.formed_at)}</div>
-            </div>
-            <div className="ask-row-section">
-              <strong>Дата завершения</strong>
-              <div>{formatDate(ask.completed_at)}</div>
-            </div>
+            <div className="ask-row-section">{ask.id}</div>
+            <div className="ask-row-section">{getFirstOperand(ask.first_operand)}</div>
+            <div className="ask-row-section">{getStatusText(ask.status)}</div>
+            <div className="ask-row-section">{formatDate(ask.created_at)}</div>
+            <div className="ask-row-section">{formatDate(ask.formed_at)}</div>
+            <div className="ask-row-section">{formatDate(ask.completed_at)}</div>
+            {isStaff && <div className="ask-row-section">{ask.creator}</div>}
             {isStaff && (
               <div className="ask-row-section">
-                <strong>Создатель</strong>
-                <div>{ask.creator}</div>
-              </div>
-            )}
-
-            {isStaff && ask.status === "f" && (
+                {ask.status === 'f' ? (
               <>
-                <div className="ask-row-section">
                   <button
                     className="ask-complete"
                     onClick={(e) => {
@@ -208,8 +195,6 @@ const AsksPage = () => {
                   >
                     Принять
                   </button>
-                </div>
-                <div className="ask-row-section">
                   <button
                     className="ask-reject"
                     onClick={(e) => {
@@ -219,12 +204,23 @@ const AsksPage = () => {
                   >
                     Отклонить
                   </button>
+                  </>
+                ) : (
+                  <>
+                    <button className="ask-complete" disabled>
+                      Принять
+                    </button>
+                    <button className="ask-reject" disabled>
+                      Отклонить
+                    </button>
+                  </>
+                )}
                 </div>
-              </>
             )}
           </div>
         ))}
       </div>
+
     </div>
   );
 };

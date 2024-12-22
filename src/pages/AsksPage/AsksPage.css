@@ -1,3 +1,21 @@
+.asks-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #f9f9f9;
+  border-bottom: 2px solid #ddd;
+  padding: 15px;
+  font-weight: bold;
+  font-size: 1rem;
+  color: #555;
+  text-align: center;
+}
+
+.asks-header div {
+  flex: 1;
+  text-align: center;
+}
+
 .asks-page {
   padding: 20px;
   font-family: Arial, sans-serif;
@@ -68,6 +86,7 @@ h1 {
   font-weight: bold;
   color: #333;
 }
+
 .ask-row-section button {
   padding: 8px 12px;
   border: none;
@@ -79,4 +98,9 @@ h1 {
 
 .ask-row-section button:hover {
   background-color: #0056b3;
+}
+.ask-row-section button:disabled {
+  background-color: #ccc; /* Серый фон для неактивных кнопок */
+  color: #666; /* Более светлый цвет текста для неактивных кнопок */
+  cursor: not-allowed; /* Изменение курсора на "недоступно" */
 }

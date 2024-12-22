@@ -4,7 +4,7 @@ import operationsReducer from './slices/operationsSlice';
 import userReducer from './slices/userSlice';
 import askReducer from './slices/askSlice';
 import { persistReducer, persistStore } from 'redux-persist';
-import storage from 'redux-persist/lib/storage'; // localStorage для web
+import storage from 'redux-persist/lib/storage';
 
 // Конфигурация redux-persist
 const persistConfig = {

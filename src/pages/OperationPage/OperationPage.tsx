@@ -1,55 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import './OperationPage.css';
-import { OperationsMocks } from '../../modules/mocks';
-import { T_Operation } from '../../modules/types';
 import { useParams, useNavigate } from 'react-router-dom';
-
+import { fetchOperationDetails } from '../../slices/operationsSlice';
+import { useAppDispatch, useAppSelector } from '../../hooks'; // Use typed hooks
 import defaultimg from '../../../public/default.jpg';
 
 const OperationPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const [operation, setOperation] = useState<T_Operation | null>(null);
-  const [isMock, setIsMock] = useState(false);
-
-  const fetchData = async () => {
-    try {
-      const response = await fetch(`http://localhost:8000/api/operations/${id}`, { signal: AbortSignal.timeout(1000) });
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
-      setOperation(data);
-    } catch (error) {
-      console.error('Fetch error:', error);
-      createMock();
-    }
-  };
-
-  const createMock = () => {
-    setIsMock(true);
-    const mockOperation = OperationsMocks.find(operation => operation?.id === parseInt(id as string)) as T_Operation;
-
-    if (mockOperation) {
-      setOperation(mockOperation);
-    } else {
-      // Редирект на страницу 404, если операция не найдена
-      navigate(`/error/404`, { replace: true });
-    }
-  }
+  const dispatch = useAppDispatch(); // Use typed dispatch
+  const { operations, loading, error } = useAppSelector((state) => state.operations);
 
   useEffect(() => {
-    if (!isMock) {
-      fetchData();
-    } else {
-      createMock();
+    if (id) {
+      dispatch(fetchOperationDetails(id));
     }
+  }, [id, dispatch]);
 
-    return () => {
-      setOperation(null);
-    };
-  }, [id, isMock]);
+  if (loading) {
+    return <div className="loading-gif"><img src="/loading.webp" alt="Loading" /></div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  const operation = operations[0]; // Assuming you have a single operation detail
 
   if (!operation) {
-    return <div className="loading-gif"><img src="/loading.webp" alt="Loading" /></div>;
+    return <div>No operation found</div>;
   }
 
   return (
