@@ -3,6 +3,19 @@ body {
     background-color: white;
 }
 
+.operation-result {
+    background-color: #f0f8ff; /* Светлый фон */
+    border: 1px solid #31708f; /* Цвет границы */
+    border-radius: 8px; /* Закругленные углы */
+    padding: 10px; /* Отступы внутри блока */
+    margin-top: 0px; /* Отступ сверху */
+    font-size: 18px; /* Размер шрифта */
+    color: #31708f; /* Цвет текста */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Тень */
+    display: flex; /* Flexbox для выравнивания */
+    align-items: center; /* Центрирование по вертикали */
+}
+
 .header {
     width: 100%;
     height: 42px;

@@ -168,7 +168,7 @@ const AskPage = () => {
                                     <option value="true">1</option>
                                 </select>
                             </div>
-                            {!isEditable && (
+                            {ask.status === 'c' && (
                                 <div className="operation-result">
                                     <strong>Результат:</strong> {result !== null ? (result ? '1' : '0') : 'N/A'}
                                 </div>
