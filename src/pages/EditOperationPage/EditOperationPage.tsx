@@ -1,16 +1,19 @@
 // src/pages/EditOperationPage/EditOperationPage.tsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAppSelector } from '../../hooks';
-import API from '../../api/API';
+import { useAppSelector, useAppDispatch } from '../../hooks';
+import { fetchOperationDetails, updateOperation, updateOperationImage } from '../../slices/operationsSlice';
 import { T_Operation } from '../../modules/types';
 import defaultimg from '../../../public/default.jpg';
-import './EditOperationPage.css'; // Import the CSS file
+import './EditOperationPage.css';
 
 const EditOperationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
   const { isStaff } = useAppSelector((state) => state.user);
+  const { operations, error } = useAppSelector((state) => state.operations);
   const [operation, setOperation] = useState<T_Operation | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
 
@@ -18,21 +21,15 @@ const EditOperationPage: React.FC = () => {
     if (!isStaff) {
       navigate('/'); // Redirect if not a staff member
     } else if (id) {
-      fetchOperation();
+      dispatch(fetchOperationDetails(id));
     }
-  }, [id, isStaff, navigate]);
+  }, [id, isStaff, navigate, dispatch]);
 
-  const fetchOperation = async () => {
-    try {
-      const response = await API.getOperationDetails(id!); // Use non-null assertion
-      if (response.ok) {
-        const data = await response.json();
-        setOperation(data);
-      }
-    } catch (error) {
-      setLocalError('Failed to fetch operation');
+  useEffect(() => {
+    if (operations.length > 0) {
+      setOperation(operations[0]);
     }
-  };
+  }, [operations]);
 
   const handleFieldChange = (field: keyof T_Operation, value: any) => {
     setOperation((prev) => prev ? { ...prev, [field]: value } : null);
@@ -41,10 +38,8 @@ const EditOperationPage: React.FC = () => {
   const handleSaveChanges = async () => {
     if (operation) {
       try {
-        const response = await API.updateOperation(operation.id, operation);
-        if (response.ok) {
-          navigate(`/operation/${operation.id}`);
-        }
+        await dispatch(updateOperation(operation)).unwrap();
+        navigate(`/operation/${operation.id}`);
       } catch (error) {
         setLocalError('Failed to save changes');
       }
@@ -58,19 +53,9 @@ const EditOperationPage: React.FC = () => {
       formData.append('photo', file);
 
       try {
-        // Call the API to upload the image
-        const response = await API.operationsImageUpdate(operation!.id.toString(), formData);
-        if (response.ok) {
-          const data = await response.json();
-          const imageName = data.photo_url.split('/').pop(); // Extract the image name from the URL
-
-          // Update the operation's photo field with the image name
+        const imageName = await dispatch(updateOperationImage({ id: operation!.id.toString(), formData })).unwrap();
           setOperation((prev) => prev ? { ...prev, photo: imageName } : null);
-          fetchOperation(); // Refresh operation data
-        } else {
-          const errorData = await response.json();
-          setLocalError(errorData.photo ? errorData.photo.join(', ') : 'Failed to update image');
-        }
+        dispatch(fetchOperationDetails(id!)); // Refresh operation data
       } catch (error) {
         setLocalError('Failed to update image');
       }

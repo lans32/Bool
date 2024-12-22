@@ -1,4 +1,3 @@
-//operationsSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import API from '../api/API';
 import { T_Operation } from '../modules/types';
@@ -84,6 +83,73 @@ export const addOperationToDraft = createAsyncThunk<
     }
 });
 
+// Thunk for creating a new operation
+export const createOperation = createAsyncThunk<
+    void,
+    Omit<T_Operation, 'id'>,
+    { rejectValue: string }
+>('operations/createOperation', async (operationData, { dispatch, rejectWithValue }) => {
+    try {
+        const response = await API.createOperation(operationData);
+        if (!response.ok) throw new Error('Failed to create operation');
+        dispatch(fetchOperations()); // Refresh operations list
+    } catch (error) {
+        console.error('Error creating operation:', error);
+        return rejectWithValue('Failed to create operation');
+    }
+});
+
+// Thunk for updating an operation
+export const updateOperation = createAsyncThunk<
+    void,
+    T_Operation,
+    { rejectValue: string }
+>('operations/updateOperation', async (operation, { rejectWithValue }) => {
+    try {
+        const response = await API.updateOperation(operation.id, operation);
+        if (!response.ok) throw new Error('Failed to update operation');
+    } catch (error) {
+        console.error('Error updating operation:', error);
+        return rejectWithValue('Failed to update operation');
+    }
+});
+
+// Thunk for deleting an operation
+export const deleteOperation = createAsyncThunk<
+    void,
+    number,
+    { rejectValue: string }
+>('operations/deleteOperation', async (id, { dispatch, rejectWithValue }) => {
+    try {
+        const response = await API.deleteOperation(id);
+        if (!response.ok) throw new Error('Failed to delete operation');
+        dispatch(fetchOperations()); // Refresh operations list
+    } catch (error) {
+        console.error('Error deleting operation:', error);
+        return rejectWithValue('Failed to delete operation');
+    }
+});
+
+// Add this thunk for updating the operation image
+export const updateOperationImage = createAsyncThunk<
+    string, // Return type
+    { id: string; formData: FormData }, // Argument type
+    { rejectValue: string }
+>('operations/updateOperationImage', async ({ id, formData }, { rejectWithValue }) => {
+    try {
+        const response = await API.operationsImageUpdate(id, formData);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.photo ? errorData.photo.join(', ') : 'Failed to update image');
+        }
+        const data = await response.json();
+        return data.photo_url.split('/').pop(); // Return the image name
+    } catch (error) {
+        console.error('Error updating operation image:', error);
+        return rejectWithValue('Failed to update image');
+    }
+});
+
 const operationsSlice = createSlice({
     name: 'operations',
     initialState,
@@ -122,6 +188,18 @@ const operationsSlice = createSlice({
             })
             .addCase(addOperationToDraft.rejected, (state, action) => {
                 state.error = action.payload || 'Failed to add operation to draft';
+            })
+            .addCase(createOperation.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to create operation';
+            })
+            .addCase(updateOperation.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to update operation';
+            })
+            .addCase(deleteOperation.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to delete operation';
+            })
+            .addCase(updateOperationImage.rejected, (state, action) => {
+                state.error = action.payload || 'Failed to update image';
             });
     },
 });

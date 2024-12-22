@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchOperations } from '../../slices/operationsSlice';
-import API from '../../api/API';
+import { fetchOperations, createOperation, deleteOperation } from '../../slices/operationsSlice';
 import { Operation } from '../../api/Types';
 import './EditOperationsPage.css';
 
@@ -18,7 +17,6 @@ const EditOperationsPage: React.FC = () => {
     }, [dispatch]);
 
     const handleAddOperation = async () => {
-        try {
             if (!newOperation.name || !newOperation.operator_name) {
                 setLocalError('Name and Operator Name are required');
                 return;
@@ -36,11 +34,9 @@ const EditOperationsPage: React.FC = () => {
                 value_AB: newOperation.value_AB || false
             };
 
-            const response = await API.createOperation(operationData);
-            if (response.ok) {
-                dispatch(fetchOperations());
+        try {
+            await dispatch(createOperation(operationData)).unwrap();
                 setNewOperation({});
-            }
         } catch (error) {
             setLocalError('Failed to add operation');
         }
@@ -48,10 +44,7 @@ const EditOperationsPage: React.FC = () => {
 
     const handleDeleteOperation = async (id: number) => {
         try {
-            const response = await API.deleteOperation(id);
-            if (response.ok) {
-                dispatch(fetchOperations());
-            }
+            await dispatch(deleteOperation(id)).unwrap();
         } catch (error) {
             setLocalError('Failed to delete operation');
         }
