@@ -1,8 +1,7 @@
 import { FC, useState } from "react";
 import { useAppDispatch } from "../../hooks"; // Use the typed dispatch hook
 import { useNavigate } from "react-router-dom";
-import { loginUser } from "../../slices/userSlice"; // Import the new thunk
-import API from "../../api/API";
+import { loginUser, registerUser } from "../../slices/userSlice"; // Import the new thunk
 import "./AuthPage.css";
 
 const Auth: FC = () => {
@@ -19,18 +18,12 @@ const Auth: FC = () => {
     
         try {
             if (isRegister) {
-                const response = await API.auth({ email, password });
-                const data = await response.json();
-                if (data.status === "Success") {
-                    // Dispatch loginUser thunk after successful registration
-                    const resultAction = await dispatch(loginUser({ email, password }));
-                    if (loginUser.fulfilled.match(resultAction)) {
-                        navigate("/operations");
-                    } else {
-                        console.log("Ошибка при авторизации");
-                    }
+                // Dispatch registerUser thunk for registration
+                const resultAction = await dispatch(registerUser({ email, password }));
+                if (registerUser.fulfilled.match(resultAction)) {
+                    navigate("/operations");
                 } else {
-                    console.log("Ошибка регистрации");  
+                    console.log("Ошибка при регистрации");
                 }
             } else {
                 // Dispatch loginUser thunk for login

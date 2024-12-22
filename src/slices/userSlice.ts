@@ -37,6 +37,27 @@ export const loginUser = createAsyncThunk<
     }
 );
 
+// Thunk for registration
+export const registerUser = createAsyncThunk<
+    { username: string; isStaff: boolean }, // Return type
+    { email: string; password: string }, // Argument type
+    { rejectValue: string } // ThunkAPI type
+>(
+    'user/register',
+    async ({ email, password }, { rejectWithValue }) => {
+        try {
+            const response = await API.auth({ email, password });
+            if (!response.ok) {
+                throw new Error('Registration failed');
+            }
+            const data = await response.json();
+            return { username: data.username, isStaff: data.is_staff };
+        } catch (error: any) {
+            return rejectWithValue(error.message || "Ошибка при регистрации.");
+        }
+    }
+);
+
 // Thunk for updating profile
 export const updateProfile = createAsyncThunk(
     'user/updateProfile',
@@ -82,6 +103,15 @@ const userSlice = createSlice({
                 state.error = null;
             })
             .addCase(loginUser.rejected, (state, action) => {
+                state.error = action.payload as string;
+            })
+            .addCase(registerUser.fulfilled, (state, action) => {
+                state.isLoggedIn = true;
+                state.userName = action.payload.username;
+                state.isStaff = action.payload.isStaff;
+                state.error = null;
+            })
+            .addCase(registerUser.rejected, (state, action) => {
                 state.error = action.payload as string;
             })
             .addCase(updateProfile.fulfilled, (state, action) => {
